@@ -77,7 +77,7 @@ class RegisterController extends BaseController
 
         $input = $request->all();
         // dd($input);
-        $input['user_role_id'] = 1;
+        $input['user_role_id'] = 2;
         $input['password'] = bcrypt($input['password']);
 
         $user = User::create($input);

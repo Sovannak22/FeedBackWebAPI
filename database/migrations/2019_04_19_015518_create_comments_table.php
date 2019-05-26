@@ -18,7 +18,6 @@ class CreateCommentsTable extends Migration
             $table->bigInteger('feedback_id')->unsigned();
             $table->text('description');
             $table->timestamps();
-
             $table->foreign('feedback_id')->references('id')->on('feed_backs');
         });
     }

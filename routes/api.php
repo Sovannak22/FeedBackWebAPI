@@ -23,7 +23,10 @@ Route::middleware('auth:api')->group( function () {
 	Route::resource('feedbacks', 'FeedBackController');
 
 });
-Route::get('hello','FeedBackController@index');
+
+Route::middleware('auth:api')->get('feedbacks/public/place/{id}','FeedBackController@feedbackPublicById');
+Route::middleware('auth:api')->get('feedbacks/private/place','FeedBackController@feedbackPrivateById');
+// Route::get('hello','FeedBackController@index');
 //Place route
 Route::middleware('auth:api')->group( function () {
 
@@ -37,6 +40,15 @@ Route::middleware('auth:api')->group( function () {
 	Route::resource('news', 'NewsController');
 
 });
+
+Route::middleware('auth:api')->group( function () {
+
+	Route::resource('comments', 'CommentController');
+
+});
+Route::middleware('auth:api')->get('comments/feedback/{id}','CommentController@index');
+
+Route::middleware('auth:api')->get('news/place/{id}','NewsController@newsById');
 // Route::middleware('auth:api')->post('addnews','NewsController@store');
 // Route::resource('news','NewsController');
 Route::middleware('auth:api')->get('/user', function (Request $request) {

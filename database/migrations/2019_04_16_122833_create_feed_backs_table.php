@@ -18,8 +18,7 @@ class CreateFeedBacksTable extends Migration
             $table->bigInteger('user_id')->unsigned();
             $table->bigInteger('place_id')->unsigned();
             $table->bigInteger('feedback_type_id')->unsigned();
-            $table->string('title');
-            $table->string('description');
+            $table->text('description');
             $table->string('img')->nullable();
             $table->timestamps();
         });

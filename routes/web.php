@@ -15,4 +15,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('getPlaceByUser/{id}','TestController@getPlaceByUser');
+// Route::get('getPlaceByUser/{id}','TestController@getPlaceByUser');

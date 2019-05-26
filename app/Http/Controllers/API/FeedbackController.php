@@ -30,9 +30,23 @@ class FeedbackController extends BaseController
         if ($validator->fails()){
             return $this->sendError('Validation Error.', $validator->errors());
         }
-        $input['user_id'] = Auth::user()->id;
-        $feedback = FeedBack::create($input);
+        if ($request->hasFile('image')){
 
+            $image = $request->file('image');
+            $imageName = $image->getClientOriginalName();
+            $imageName = $imageName.'_'.time().'.'.$image->getClientOriginalExtension();
+            Image::make($image)->resize(1000,750)->save(public_path('/storage/news_image/'.$imageName));
+            $image_url = ('storage/news_image/'.$imageName);
+
+        }
+        else{
+            $image_url = ('storage/news_image/default_news.jpg');
+        }
+        $input['user_id'] = Auth::user()->id;
+        $dataToInput = array('place_id'=>$input['place_id'],'user_id'=>$input['user_id'],'feedback_type_id'=>$input['feedback_type_id'],'title'=>$input['title'],
+        'description'=>$input['description'],'img'=>$image_url);
+        dd($dataToInput);
+        $feedback = FeedBack::create($dataToInput);
         return $this->sendResponse($feedback->toArray(), 'Product created successfully.');
     }
 

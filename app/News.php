@@ -11,7 +11,7 @@ class News extends Model
     protected $fillable = ['place_id','title','description','image_url'];
 
     public function place(){
-        return $this->belongsTo('app\Place');
+        return $this->belongsTo('App\Place');
     }
 
     public function newsImgs(){

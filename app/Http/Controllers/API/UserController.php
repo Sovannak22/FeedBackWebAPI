@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Auth;
+use User;
 
 class UserController extends BaseController
 {
@@ -17,6 +18,13 @@ class UserController extends BaseController
         return response()->json($response, 200);
 
     }
+
+    public function index(){
+        $users = User::all();
+
+        return $this->sendResponse($users->toArray(), 'Products retrieved successfully.');
+    }
+
     //
     public function getCurrentUserInfo(){
         $user = Auth::user();

@@ -8,9 +8,14 @@ class Comment extends Model
 {
     
 
+    protected $fillable = [
+        'feedback_id', 'description', 'user_id'
+    ];
+
+    public function user(){
+        return $this->belongsTo('App\User');
+    }
     public function feedback(){
-
-        return $this->belongsTo('app\Feedback');
-
+        return $this->belongTo('App\Feedback');
     }
 }

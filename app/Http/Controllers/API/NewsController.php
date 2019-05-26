@@ -4,11 +4,13 @@ namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\News;
 use Validator;
 use Image;
 use Auth;
 use Place;
+
 class NewsController extends BaseController
 {
 
@@ -23,8 +25,26 @@ class NewsController extends BaseController
     }
     public function index(){
 
-        $news = News::all();
+        if (Auth::user()->user_role_id == 1){
+            $place_id = Auth::user()->place->id;
+            $newsList = DB::table("news")->where("place_id",$place_id)->orderBy('created_at','DESC')->get();
+            return $this->sendResponse($newsList, 'Products retrieved successfully.');
+        }
+        $news = News::all()->orderBy('created_at','DESC');
         return $this->sendResponse($news->toArray(), 'Products retrieved successfully.');
+    }
+
+    public function newsById($id){
+        $newsList = DB::table("news")->where("place_id",$id)->orderBy('created_at','DESC')->get();
+        foreach ($newsList as $news){
+            $news_id = $news->id;
+            $user_name = News::find($news_id)->place->user->name;
+            // dd($user_name);
+            $news->username = $user_name;
+            // dd($news);
+        }
+    
+        return $this->sendResponse($newsList, 'Products retrieved successfully.');
     }
 
     public function store(Request $request){
@@ -46,12 +66,12 @@ class NewsController extends BaseController
             $image = $request->file('image');
             $imageName = $image->getClientOriginalName();
             $imageName = $imageName.'_'.time().'.'.$image->getClientOriginalExtension();
-            Image::make($image)->resize(500,500)->save(public_path('/storage/news_image/'.$imageName));
-            $image_url = url('/storage/news_image/'.$imageName);
+            Image::make($image)->resize(1000,750)->save(public_path('/storage/news_image/'.$imageName));
+            $image_url = ('storage/news_image/'.$imageName);
 
         }
         else{
-            $image_url = url('/storage/news_image/default_news.jpg');
+            $image_url = ('storage/news_image/default_news.jpg');
         }
         $input['place_id'] = Auth::user()->place->id;
         $dataToInput = array('place_id'=>$input['place_id'],'title'=>$input['title'],'description'=>$input['description'],'image_url'=>$image_url);

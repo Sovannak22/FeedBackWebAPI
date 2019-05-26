@@ -26,6 +26,6 @@ class FeedBack extends Model
     }
 
     public function comments(){
-        return $this->hasMany('app\Comment');
+        return $this->hasMany('App\Comment','feedback_id');
     }
 }
