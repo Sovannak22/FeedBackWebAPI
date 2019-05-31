@@ -9,7 +9,7 @@ use App\FeedBack;
 use Validator;
 use Auth;
 use Image;
-use Comment;
+use App\Comment;
 
 
 class FeedBackController extends BaseController
@@ -39,6 +39,7 @@ class FeedBackController extends BaseController
             $comments = Feedback::find($id)->comments;
             $user = DB::table("users")->where("id",$feedback->user_id)->orderBy('created_at','DESC')->get();
             $feedback->username = $user[0]->name;
+            $feedback->profile_img = $user[0]->profile_img;
             // dd(count($comments));
             $feedback->comments_count = count($comments);
         }
@@ -80,7 +81,7 @@ class FeedBackController extends BaseController
             $image = $request->file('img');
             $imageName = $image->getClientOriginalName();
             $imageName = $imageName.'_'.time().'.'.$image->getClientOriginalExtension();
-            Image::make($image)->resize(2000,3000)->save(public_path('/storage/feedback_image/'.$imageName));
+            Image::make($image)->resize(350,200)->save(public_path('/storage/feedback_image/'.$imageName));
             $image_url = ('storage/feedback_image/'.$imageName);
 
         }
@@ -112,21 +113,39 @@ class FeedBackController extends BaseController
         $input = $request->all();
         
         $feedback = FeedBack::findOrFail($id);
-        $validator = Validator::make($input , [
 
-            // 'feedback_type_id' => 'required',
-            'title' => 'required',
-            'description' => 'required',
-        ]);
+        $current_user_id = Auth::user()->id;
+        $feedback_user_id = $feedback->user_id;
+        // dd($feedback);
+        if ($current_user_id != $feedback_user_id){
 
-        if($validator->fails()){
-
-            return $this->sendError('Validation Error.', $validator->errors());       
-
+            return $this->sendError("Can not edit this post");
         }
 
-        $feedback->title = $input['title'];
+        $input = $request->all();
+
+        $image_url = $feedback->img;
+
+        $validator = Validator::make($input, [
+            'feedback_type_id' => 'required',
+            'description' => 'required'
+        ]);
+        if ($validator->fails()){
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+        if ($request->hasFile('img')){
+
+            $image = $request->file('img');
+            $imageName = $image->getClientOriginalName();
+            $imageName = $imageName.'_'.time().'.'.$image->getClientOriginalExtension();
+            Image::make($image)->resize(350,200)->save(public_path('/storage/feedback_image/'.$imageName));
+            $image_url = ('storage/feedback_image/'.$imageName);
+
+        }
+        $input['user_id'] = Auth::user()->id;
+        $feedback->feedback_type_id = $input['feedback_type_id'];
         $feedback->description = $input['description'];
+        $feedback->img = $image_url;
 
         $feedback->save();
 
@@ -137,9 +156,16 @@ class FeedBackController extends BaseController
 
     public function destroy($id)
     {
-        $feedback = FeedBack::findOrFail($id);
-        $feedback->delete();
-        return $this->sendResponse($feedback->toArray(), 'Product deleted successfully.');
+        $feedback = FeedBack::find($id);
+        $current_user_id = Auth::user()->id;
+        $feedback_user_id = $feedback->user_id;
+        // dd($feedback);
+        if ($current_user_id == $feedback_user_id){
+            $comments = Comment::where('feedback_id',$id)->delete();
+            $feedback->delete();
+            return $this->sendResponse($feedback->toArray(), 'Product deleted successfully.');
+        }
+        return $this->sendError("Can not delete this post");
 
     }
 

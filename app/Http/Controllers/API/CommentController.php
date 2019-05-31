@@ -48,4 +48,15 @@ class CommentController extends BaseController
 
         return $this->sendResponse($comment->toArray(), 'Comment created successfully.');
     }
+
+    public function destroy($id){
+        $comment = Comment::find($id);
+        $comment_userId = $comment->user->id;
+        $current_user_id = Auth::user()->id;
+        if ($current_user_id == $comment_userId){
+            $comment->delete();
+            return $this->sendResponse($comment->toArray(), 'Product deleted successfully.');
+        }
+        return $this->sendError("Can not delete this post");
+    }
 }

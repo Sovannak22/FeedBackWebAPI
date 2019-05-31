@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 */
 
 Route::post('register','RegisterController@register');
+Route::middleware('auth:api')->patch('change_profile_picture','UserController@updateProfilePicture');
 //Comment route
 
 

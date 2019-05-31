@@ -28,6 +28,15 @@ class NewsController extends BaseController
         if (Auth::user()->user_role_id == 1){
             $place_id = Auth::user()->place->id;
             $newsList = DB::table("news")->where("place_id",$place_id)->orderBy('created_at','DESC')->get();
+            foreach ($newsList as $news){
+                $news_id = $news->id;
+                $user = News::find($news_id)->place->user;
+                $user_name = $user->name;
+                // dd($user_name);
+                $news->username = $user_name;
+                $news->profile_img = $user->profile_img;
+                // dd($news);
+            }
             return $this->sendResponse($newsList, 'Products retrieved successfully.');
         }
         $news = News::all()->orderBy('created_at','DESC');
@@ -38,13 +47,15 @@ class NewsController extends BaseController
         $newsList = DB::table("news")->where("place_id",$id)->orderBy('created_at','DESC')->get();
         foreach ($newsList as $news){
             $news_id = $news->id;
-            $user_name = News::find($news_id)->place->user->name;
+            $user = News::find($news_id)->place->user;
+            $user_name = $user->name;
             // dd($user_name);
             $news->username = $user_name;
+            $news->profile_img = $user->profile_img;
             // dd($news);
         }
     
-        return $this->sendResponse($newsList, 'Products retrieved successfully.');
+        return $this->sendResponse($newsList->toArray(), 'Products retrieved successfully.');
     }
 
     public function store(Request $request){
@@ -66,7 +77,7 @@ class NewsController extends BaseController
             $image = $request->file('image');
             $imageName = $image->getClientOriginalName();
             $imageName = $imageName.'_'.time().'.'.$image->getClientOriginalExtension();
-            Image::make($image)->resize(1000,750)->save(public_path('/storage/news_image/'.$imageName));
+            Image::make($image)->resize(500,350)->save(public_path('/storage/news_image/'.$imageName));
             $image_url = ('storage/news_image/'.$imageName);
 
         }
@@ -90,13 +101,19 @@ class NewsController extends BaseController
         return $this->sendResponse($news->toArray(), 'Feedback found');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id){
 
-    {
 
         $input = $request->all();
         
         $news = News::findOrFail($id);
+
+        $current_user_id = Auth::user()->id;
+        $news = News::findOrFail($id);
+        $admin_id = $news->place->user->id;
+        if ($current_user_id != $admin_id){
+            return $this->sendError("Can not update this post");
+        }
         $validator = Validator::make($input , [
 
             // 'feedback_type_id' => 'required',
@@ -110,6 +127,16 @@ class NewsController extends BaseController
 
         }
 
+        if ($request->hasFile('image')){
+
+            $image = $request->file('image');
+            $imageName = $image->getClientOriginalName();
+            $imageName = $imageName.'_'.time().'.'.$image->getClientOriginalExtension();
+            Image::make($image)->resize(500,350)->save(public_path('/storage/news_image/'.$imageName));
+            $image_url = ('storage/news_image/'.$imageName);
+            $news->image_url = $image_url;
+
+        }
         $news->title = $input['title'];
         $news->description = $input['description'];
 
@@ -120,11 +147,16 @@ class NewsController extends BaseController
 
     }
 
-    public function destroy($id)
-    {
+    public function destroy($id){
+        $current_user_id = Auth::user()->id;
         $news = News::findOrFail($id);
-        $news->delete();
-        return $this->sendResponse($news->toArray(), 'Product deleted successfully.');
+        $admin_id = $news->place->user->id;
+        if ($current_user_id == $admin_id){
+            $news->delete();
+            return $this->sendResponse($news->toArray(), 'Product deleted successfully.');
+        }
+        return $this->sendError("Can not delete this post");
+        
 
     }
 }
