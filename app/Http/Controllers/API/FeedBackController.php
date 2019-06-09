@@ -30,6 +30,41 @@ class FeedBackController extends BaseController
         return $this->sendResponse($feed_backs->toArray(), 'Products retrieved successfully.');
     }
 
+    public function feedbackPublicByAuth(){
+        $id = Auth::user()->id;
+        $feedbacks = DB::table("feed_backs")->where("user_id",$id)
+                    ->where('feedback_type_id',1)
+                    ->orderBy('created_at','DESC')->get();
+        foreach ($feedbacks as $feedback){
+            $id=$feedback->id;
+            $comments = Feedback::find($id)->comments;
+            $user = DB::table("users")->where("id",$feedback->user_id)->orderBy('created_at','DESC')->get();
+            $feedback->username = $user[0]->name;
+            $feedback->profile_img = $user[0]->profile_img;
+            // dd(count($comments));
+            $feedback->comments_count = count($comments);
+        }
+        return $this->sendResponse($feedbacks, 'Products retrieved successfully.');
+    }
+
+    public function feedbackPrivateByAuth(){
+        $id = Auth::user()->id;
+        $feedbacks = DB::table("feed_backs")->where("user_id",$id)
+                    ->where('feedback_type_id',2)
+                    ->orderBy('created_at','DESC')->get();
+
+        foreach ($feedbacks as $feedback){
+            $id=$feedback->id;
+            $comments = Feedback::find($id)->comments;
+            $user = DB::table("users")->where("id",$feedback->user_id)->orderBy('created_at','DESC')->get();
+            $feedback->username = $user[0]->name;
+            // dd(count($comments));
+            $feedback->comments_count = count($comments);
+        }
+
+        return $this->sendResponse($feedbacks, 'Products retrieved successfully.');
+    }
+
     public function feedbackPublicById($id){
         $feedbacks = DB::table("feed_backs")->where("place_id",$id)
                     ->where('feedback_type_id',1)
@@ -46,10 +81,29 @@ class FeedBackController extends BaseController
         return $this->sendResponse($feedbacks, 'Products retrieved successfully.');
     }
 
-    public function feedbackPrivateById(){
+    public function feedbackPrivateByAdmin(){
         $id = $place_id = Auth::user()->place->id;
         $feedbacks = DB::table("feed_backs")->where("place_id",$id)
                     ->where('feedback_type_id',2)
+                    ->orderBy('created_at','DESC')
+                    ->get();
+
+        foreach ($feedbacks as $feedback){
+            $id=$feedback->id;
+            $comments = Feedback::find($id)->comments;
+            $user = DB::table("users")->where("id",$feedback->user_id)->orderBy('created_at','DESC')->get();
+            $feedback->username = $user[0]->name;
+            // dd(count($comments));
+            $feedback->comments_count = count($comments);
+        }
+
+        return $this->sendResponse($feedbacks, 'Products retrieved successfully.');
+    }
+
+    public function feedbackPublicByAdmin(){
+        $id = Auth::user()->place->id;
+        $feedbacks = DB::table("feed_backs")->where("place_id",$id)
+                    ->where('feedback_type_id',1)
                     ->orderBy('created_at','DESC')
                     ->get();
 

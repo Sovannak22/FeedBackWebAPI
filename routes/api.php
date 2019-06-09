@@ -24,9 +24,11 @@ Route::middleware('auth:api')->group( function () {
 	Route::resource('feedbacks', 'FeedBackController');
 
 });
-
+Route::middleware('auth:api')->get('feedbacks/public/user/public','FeedBackController@feedbackPublicByAuth');
+Route::middleware('auth:api')->get('feedbacks/public/user/private','FeedBackController@feedbackPrivateByAuth');
 Route::middleware('auth:api')->get('feedbacks/public/place/{id}','FeedBackController@feedbackPublicById');
-Route::middleware('auth:api')->get('feedbacks/private/place','FeedBackController@feedbackPrivateById');
+Route::middleware('auth:api')->get('feedbacks/private/place','FeedBackController@feedbackPrivateByAdmin');
+Route::middleware('auth:api')->get('feedbacks/public/place','FeedBackController@feedbackPublicByAdmin');
 // Route::get('hello','FeedBackController@index');
 //Place route
 Route::middleware('auth:api')->group( function () {

@@ -48,7 +48,7 @@ class UserController extends BaseController
             $image = $request->file('image');
             $imageName = $image->getClientOriginalName();
             $imageName = $user->name.'_'.time().'.'.$image->getClientOriginalExtension();
-            Image::make($image)->resize(240,240)->save(public_path('/storage/profile_image/'.$imageName));
+            Image::make($image)->resize(140,140)->save(public_path('/storage/profile_image/'.$imageName));
             $image_url = ('storage/profile_image/'.$imageName);
             $user->profile_img = $image_url;
 
